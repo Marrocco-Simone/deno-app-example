@@ -10,6 +10,18 @@
       <input id="name" name="name" value="<%= it.course.name %>"/><br/>
       <input type="submit" value="Update course" />
     </form>
+
+    <h2>How would you rate this course?</h2>
+    <% it.options.forEach((s, i) => { %>
+        <form method='POST' action='/courses/<%= it.course.id %>/feedbacks/<%=i+1%>'>
+          <input type='submit' value='<%=s%>'/>
+        </form>
+    <% }) %>
+    <br /> 
+    <br /> 
+    <% it.options.forEach((s, i) => { %>
+        <a href='/courses/<%= it.course.id %>/feedbacks/<%=i=1%>'><%=s%></a><br />
+    <% }) %>
     
     <p><a href="/courses">Back to courses</a></p>
   </body>

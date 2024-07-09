@@ -4,24 +4,20 @@ import * as courseService from "./courses.js";
 
 const eta = new Eta({ views: `${Deno.cwd()}/templates/` });
 
-const data = {
-  options: ["Poor", "Fair", "Good", "Very good", "Excellent"],
-};
-
-export const getIndexHtml = (c) => {
-  return c.html(eta.render("index.eta", data));
-};
+const options = ["Poor", "Fair", "Good", "Very good", "Excellent"];
 
 export const getFeedback = async (c) => {
+  const id = c.req.param("id");
   const key = c.req.param("key");
-  const count = await getCount(key);
-  return c.text(`Feedback ${key}: ${count}`);
+  const count = await getCount(id, key);
+  return c.text(`Course ${id}, Feedback ${key}: ${count}`);
 };
 
 export const postFeedback = async (c) => {
+  const id = c.req.param("id");
   const key = c.req.param("key");
-  await incrementCount(key);
-  return c.redirect("/");
+  await incrementCount(id, key);
+  return c.redirect(`/courses/${id}`);
 };
 
 // * ----------------------------------------------------------
@@ -41,7 +37,10 @@ export const createCourse = async (c) => {
 export const showCourse = async (c) => {
   const id = c.req.param("id");
   return c.html(
-    eta.render("course.eta", { course: await courseService.getCourse(id) })
+    eta.render("course.eta", {
+      course: await courseService.getCourse(id),
+      options,
+    })
   );
 };
 

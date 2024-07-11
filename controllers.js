@@ -1,5 +1,9 @@
 import { Eta } from "https://deno.land/x/eta@v3.4.0/src/index.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import {
+  getSignedCookie,
+  setSignedCookie,
+} from "https://deno.land/x/hono@v3.12.11/helper.ts";
 import { getCount, incrementCount } from "./feedbacks.js";
 import * as courseService from "./courses.js";
 
@@ -17,6 +21,9 @@ const validator = z.object({
     }),
 });
 
+const secret = "secret";
+const sessionCounts = new Map();
+
 export const getFeedback = async (c) => {
   const id = c.req.param("id");
   const key = c.req.param("key");
@@ -27,6 +34,15 @@ export const getFeedback = async (c) => {
 export const postFeedback = async (c) => {
   const id = c.req.param("id");
   const key = c.req.param("key");
+  const sessionId =
+    (await getSignedCookie(c, secret, "sessionId")) ?? crypto.randomUUID();
+  sessionCounts[sessionId] = {
+    ...sessionCounts[sessionId],
+    [id]: key,
+  };
+  await setSignedCookie(c, "sessionId", sessionId, secret, {
+    path: "/",
+  });
   await incrementCount(id, key);
   return c.redirect(`/courses/${id}`);
 };
@@ -56,10 +72,14 @@ export const createCourse = async (c) => {
 
 export const showCourse = async (c) => {
   const id = c.req.param("id");
+  const sessionId = await getSignedCookie(c, secret, "sessionId");
+  console.log(sessionCounts);
+  const has_voted = !!sessionCounts?.[sessionId]?.[id];
   return c.html(
     eta.render("course.eta", {
       course: await courseService.getCourse(id),
       options,
+      has_voted,
     })
   );
 };

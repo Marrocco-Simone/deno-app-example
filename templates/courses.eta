@@ -4,10 +4,12 @@
     <title>Course</title>
   </head>
   <body>
+    <%~ include("/validation-errors.eta", { field: "Course Name", errors: it?.errors?.name?._errors }) %>
     <p>Add a course:</p>
     <form method="POST" action="/courses">
       <label for="name">Course name:</label>
-      <input id="name" name="name" /><br/>
+      <input id="name" name="name" value="<%= it?.name ?? '' %>"/>
+      <br/>
       <input type="submit" value="Add" />
     </form>
     <p>Existing courses:</p>
